@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.domor.dao.DataDao">
+
+    <select id="getLastDayData" parameterType="String" resultType="com.domor.domain.DayData">
+        SELECT *
+        FROM data_day
+        WHERE id = (SELECT max(id) FROM data_day WHERE devCode = #{devCode})
+    </select>
+
+    <select id="getLastClsData" parameterType="String" resultType="com.domor.domain.DayData">
+        SELECT *
+        FROM data_cls
+        WHERE id = (SELECT max(id) FROM data_cls WHERE devCode = #{devCode})
+    </select>
+
+    <update id="updateLastStatus" parameterType="map">
+        UPDATE data_status
+        SET etime    = #{devTime},
+            datediff = TIMESTAMPDIFF(SECOND, stime, #{devTime})
+        WHERE id = (
+            SELECT a.id FROM (SELECT max(id) id FROM data_status WHERE devCode = #{devCode}) a
+        )
+    </update>
+
+    <insert id="insertStatus" parameterType="map">
+        INSERT INTO data_status(devCode, devStatus, devStatusChange, stime, createTime)
+        VALUES (#{devCode}, #{devStatus}, #{devStatusChange}, #{devTime}, now())
+    </insert>
+
+    <update id="updateStatus" parameterType="java.util.List">
+        UPDATE collector_new_gateway
+        SET
+        <foreach collection="list" item="item" index="index" separator=",">
+            db    = #{item.db},
+            runMode = #{item.rm},
+            updatetime = now()
+        WHERE collectorId = #{item.ICCID}
+        </foreach>
+    </update>
+
+
+    <!--    <insert id="insertRecord" parameterType="java.util.List">-->
+    <!--        INSERT INTO data_record(devCode, pr, ds, dsc, rta, ota, sta, dp, dc0, dc1, dc2, dv0,dv1,dv2, db, t, createTime)-->
+    <!--        VALUES-->
+    <!--        <foreach collection="list" item="item" index="index" separator=",">-->
+    <!--            (#{item.devCode},#{item.pr},#{item.ds},#{item.dsc},#{item.rta},#{item.ota},#{item.sta}-->
+    <!--            ,#{item.dp},#{item.dc0},#{item.dc1},#{item.dc2},#{item.dv0},#{item.dv1},#{item.dv2},#{item.db},#{item.t},now())-->
+    <!--        </foreach>-->
+    <!--    </insert>-->
+
+    <insert id="insertRecord" parameterType="java.util.List">
+        INSERT INTO `t_record` (`ICCID`,
+        `db`,
+        `rm`,
+        `on`,
+        `off`,
+        `temp0`,
+        `temp1`,
+        `ph`,
+        `o2`,
+        `time_record`)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.ICCID},
+            #{item.db},
+            #{item.rm},
+            #{item.on},
+            #{item.off},
+            #{item.tem0},
+            #{item.tem1},
+            #{item.ph1},
+            #{item.o2},
+            now())
+        </foreach>
+
+    </insert>
+
+    <insert id="insertLastDayData" parameterType="java.util.List">
+        INSERT INTO data_day(date, devCode, onTime, runTime, downTime, energy, onTimeAcc, runTimeAcc, downTimeAcc,
+        energyAcc, devTime, createtime)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.date},#{item.devCode},#{item.onTimeDay},#{item.runTimeDay},#{item.downTimeDay},#{item.energyDay}
+            ,#{item.onTimeAcc},#{item.runTimeAcc},#{item.downTimeAcc},#{item.energyAcc},#{item.devTime},now())
+        </foreach>
+    </insert>
+
+    <insert id="insertLastClsData" parameterType="java.util.List">
+        INSERT INTO data_cls(date, cls, devCode, onTime, runTime, downTime, energy, onTimeAcc, runTimeAcc, downTimeAcc,
+        energyAcc, devTime, createtime)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (fun_getDay(DATE_ADD(now(),INTERVAL -10 MINUTE)),fun_getCls(DATE_ADD(now(),INTERVAL -10 MINUTE))
+            ,#{item.devCode},#{item.onTimeCls},#{item.runTimeCls},#{item.downTimeCls},#{item.energyCls}
+            ,#{item.onTimeAcc},#{item.runTimeAcc},#{item.downTimeAcc},#{item.energyAcc},#{item.devTime},now())
+        </foreach>
+    </insert>
+
+    <insert id="insertWarnMessage" parameterType="map">
+        INSERT INTO data_warning(devCode, content, status, insertTime)
+        VALUES (#{devCode}, #{content}, 0, now())
+    </insert>
+
+</mapper>

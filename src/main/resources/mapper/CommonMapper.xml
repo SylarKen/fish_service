@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.domor.dao.CommonDao">
+
+	<select id="getAllDevices" resultType="map">
+		SELECT * FROM collector_new_gateway WHERE delete_flag=0
+	</select>
+
+	<select id="getDayEndTime" resultType="String">
+		SELECT config_value FROM sys_config WHERE status=0 AND config_key='day_stime'
+	</select>
+
+	<select id="getClsEndTimes" resultType="String">
+		SELECT etime FROM info_cls WHERE delete_flag=0
+	</select>
+
+	<select id="getDayByDate" resultType="String" parameterType="date">
+		SELECT fun_getDate(#{date})
+	</select>
+
+</mapper>
